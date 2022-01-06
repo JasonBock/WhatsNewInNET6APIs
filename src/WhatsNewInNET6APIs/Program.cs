@@ -1,14 +1,20 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using OldTimer = System.Timers.Timer;
 
 //DemonstrateCollectionsEnsureCapacity();
 //DemonstrateCollectionsPriorityQueue();
-DemonstrateCollectionsDictionaryRefValues();
+//DemonstrateCollectionsDictionaryRefValues();
 //DemonstrateLinqImprovementsDefaultValues();
 //DemonstrateLinqImprovementsByOperators();
 //DemonstrateDatesAndTimes();
+//await DemonstrateAsynchronousForEachAsync().ConfigureAwait(false);
 //await DemonstrateAsynchronousWaitAsync().ConfigureAwait(false);
+//await DemonstrateAsynchronousTimerAsync().ConfigureAwait(false);
+DemonstrateStringInterpolation();
+//DemonstrateNativeMemoryAllocation();
 //DemonstrateOneShotCryptography();
 //DemonstrateArgumentNullException();
 //DemonstrateNullabilityInfo();
@@ -171,9 +177,51 @@ static void DemonstrateDatesAndTimes()
 	Console.WriteLine($"After: Time + Time is {afterTime.Add(afterTime.ToTimeSpan())}");
 }
 
+static async Task DemonstrateAsynchronousForEachAsync()
+{
+	Console.WriteLine(nameof(DemonstrateAsynchronousForEachAsync));
+
+	var urls = new[]
+	{
+		new Uri("https://rocketmortgage.com"),
+		new Uri("https://dotnet.microsoft.com/"),
+		new Uri("https://aws.amazon.com/")
+	};
+
+	using var client = new HttpClient();
+
+	// Before: Parallel.ForEach() spawned work in parallel, but the ForEach()
+	// call was blocking.
+	var parallelResult = Parallel.ForEach(urls, async url =>
+	{
+		var response = await client.GetAsync(url).ConfigureAwait(false);
+
+		if (response.IsSuccessStatusCode)
+		{
+			var content = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+			Console.WriteLine($"Before: Site is {url}, size is {content.Length}");
+		}
+	});
+
+	Console.WriteLine(parallelResult.IsCompleted);
+	Console.ReadLine();
+
+	// After: Now you can call ForEachAsync().
+	await Parallel.ForEachAsync(urls, async (url, token) =>
+	{
+		var response = await client.GetAsync(url, token).ConfigureAwait(false);
+
+		if (response.IsSuccessStatusCode)
+		{
+			var content = await response.Content.ReadAsByteArrayAsync(token).ConfigureAwait(false);
+			Console.WriteLine($"After: Site is {url}, size is {content.Length}");
+		}
+	}).ConfigureAwait(false);
+}
+
 static async Task DemonstrateAsynchronousWaitAsync()
 {
-	Console.WriteLine(nameof(DemonstrateOneShotCryptography));
+	Console.WriteLine(nameof(DemonstrateAsynchronousWaitAsync));
 
 	// Before: You have to synchronous wait for a task
 	// to complete.
@@ -191,6 +239,84 @@ static async Task DemonstrateAsynchronousWaitAsync()
 	Console.WriteLine("After: Starting...");
 	await afterTask.WaitAsync(TimeSpan.FromHours(1)).ConfigureAwait(false);
 	Console.WriteLine("Before: Ending...");
+}
+
+// https://github.com/dotnet/runtime/issues/31525
+static async Task DemonstrateAsynchronousTimerAsync()
+{
+	Console.WriteLine(nameof(DemonstrateAsynchronousTimerAsync));
+
+	var beforeCount = 0;
+
+	// Before: There are 5 different timers that exist in .NET.
+	using (var beforeTimer = new OldTimer(250.0))
+	{
+		beforeTimer.Elapsed += (s, e) =>
+		{
+			Console.WriteLine($"Before: Call count is {beforeCount}");
+			beforeCount++;
+
+			if (beforeCount >= 4)
+			{
+				beforeTimer.Stop();
+			}
+		};
+		beforeTimer.AutoReset = true;
+		beforeTimer.Start();
+		Console.WriteLine("Press enter to continue...");
+		Console.ReadLine();
+	}
+
+	var afterCount = 0;
+
+	// After: PeriodicTimer has features like not capturing the execution context,
+	// and it has asynchronous operation.
+	using var afterTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(250));
+
+	while (await afterTimer.WaitForNextTickAsync().ConfigureAwait(false))
+	{
+		Console.WriteLine($"After: Call count is {afterCount}");
+		afterCount++;
+
+		if (afterCount >= 4)
+		{
+			break;
+		}
+	}
+}
+
+static void DemonstrateStringInterpolation()
+{
+	Console.WriteLine(nameof(DemonstrateStringInterpolation));
+	var a = RandomNumberGenerator.GetInt32(int.MaxValue).ToString(CultureInfo.CurrentCulture);
+	var b = RandomNumberGenerator.GetInt32(int.MaxValue);
+	// You have to look at the IL to see the value...
+	Console.WriteLine($"The values are {a} and {b}");
+}
+
+static void DemonstrateNativeMemoryAllocation()
+{
+	Console.WriteLine(nameof(DemonstrateNativeMemoryAllocation));
+
+	// Before: Marshal.AllocHGlobal works, but it's documented to be Windows-only,
+	// as stated here:
+	// https://devblogs.microsoft.com/dotnet/new-dotnet-6-apis-driven-by-the-developer-community/#comment-10238
+	// Note, if you look at how AllocHGlobal() is implemented:
+	// https://source.dot.net/#System.Private.CoreLib/Marshal.cs
+	// you'll see that it calls the "new" API...
+	// but that's the Unix implementation.
+	unsafe
+	{
+		var beforeAlloc = Marshal.AllocHGlobal(256);
+		Marshal.FreeHGlobal(beforeAlloc);
+	}
+
+	// After: NativeMemory is designed to be cross-platform.
+	unsafe
+	{
+		var afterAlloc = (byte*)NativeMemory.Alloc(256);
+		NativeMemory.Free(afterAlloc);
+	}
 }
 
 static void DemonstrateOneShotCryptography()
