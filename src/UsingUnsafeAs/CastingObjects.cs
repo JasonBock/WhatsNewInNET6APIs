@@ -11,6 +11,7 @@ public class CastingObjects
 	[Benchmark]
 	public Data CastUsingCSharp() => (Data)this.data;
 
+	// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.unsafe.as
 	[Benchmark]
 	public Data CastUsingUnsafeAs() => Unsafe.As<Data>(this.data);
 }
