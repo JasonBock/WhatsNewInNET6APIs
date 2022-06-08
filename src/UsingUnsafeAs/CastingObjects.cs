@@ -6,12 +6,12 @@ namespace UsingUnsafeAs;
 [MemoryDiagnoser]
 public class CastingObjects
 {
-	private readonly object data = new Data();
+	private readonly object data = new TargetType();
 
 	[Benchmark]
-	public Data CastUsingCSharp() => (Data)this.data;
+	public TargetType CastUsingCSharp() => (TargetType)this.data;
 
 	// https://docs.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.unsafe.as
 	[Benchmark]
-	public Data CastUsingUnsafeAs() => Unsafe.As<Data>(this.data);
+	public TargetType CastUsingUnsafeAs() => Unsafe.As<TargetType>(this.data);
 }

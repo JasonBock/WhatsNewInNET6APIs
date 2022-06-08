@@ -1,13 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<AnalysisMode>AllEnabledByDefault</AnalysisMode>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<Version>1.0.0</Version>
 	</PropertyGroup>
 </Project>

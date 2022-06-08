@@ -27,14 +27,18 @@ static void DemonstrateCollectionsEnsureCapacity()
 	// on some collections, like a HashSet.
 	// Note that a HashSet sets the capacity based on a primes table:
 	// https://source.dot.net/#System.Private.CoreLib/HashSet.cs,831ca3e6d9c0d78b,references
-	var beforeItems = new HashSet<string>(3) { "a", "b", "c" };
-	// Future additions will probably incur an allocation.
-	beforeItems.Add("d");
-	beforeItems.Add("e");
-	beforeItems.Add("f");
-	beforeItems.Add("g");
-	beforeItems.Add("h");
-	beforeItems.Add("i");
+	var beforeItems = new HashSet<string>(3)
+	{
+		"a",
+		"b",
+		"c",  // Future additions will probably incur an allocation.
+		"d",
+		"e",
+		"f",
+		"g",
+		"h",
+		"i"
+	};
 
 	// After: If you need to add items after initialization,
 	// and you have a good idea how many,
