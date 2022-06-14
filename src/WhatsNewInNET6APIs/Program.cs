@@ -1,10 +1,9 @@
-﻿using System.Globalization;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using OldTimer = System.Timers.Timer;
 
-//DemonstrateCollectionsEnsureCapacity();
+DemonstrateCollectionsEnsureCapacity();
 //DemonstrateCollectionsPriorityQueue();
 //DemonstrateCollectionsDictionaryRefValues();
 //DemonstrateLinqImprovementsDefaultValues();
@@ -13,7 +12,7 @@ using OldTimer = System.Timers.Timer;
 //await DemonstrateAsynchronousForEachAsync().ConfigureAwait(false);
 //await DemonstrateAsynchronousWaitAsync().ConfigureAwait(false);
 //await DemonstrateAsynchronousTimerAsync().ConfigureAwait(false);
-DemonstrateStringInterpolation();
+//DemonstrateStringInterpolation();
 //DemonstrateNativeMemoryAllocation();
 //DemonstrateOneShotCryptography();
 //DemonstrateArgumentNullException();
@@ -40,6 +39,8 @@ static void DemonstrateCollectionsEnsureCapacity()
 		"i"
 	};
 
+	Console.WriteLine($"{nameof(beforeItems)} is {string.Join(", ", beforeItems)}");
+
 	// After: If you need to add items after initialization,
 	// and you have a good idea how many,
 	// you can call EnsureCapacity()
@@ -51,6 +52,8 @@ static void DemonstrateCollectionsEnsureCapacity()
 	afterItems.Add("g");
 	afterItems.Add("h");
 	afterItems.Add("i");
+
+	Console.WriteLine($"{nameof(afterItems)} is {string.Join(", ", afterItems)}");
 }
 
 static void DemonstrateCollectionsPriorityQueue()
@@ -292,7 +295,7 @@ static async Task DemonstrateAsynchronousTimerAsync()
 static void DemonstrateStringInterpolation()
 {
 	Console.WriteLine(nameof(DemonstrateStringInterpolation));
-	var a = RandomNumberGenerator.GetInt32(int.MaxValue).ToString(CultureInfo.CurrentCulture);
+	var a = RandomNumberGenerator.GetInt32(int.MaxValue);
 	var b = RandomNumberGenerator.GetInt32(int.MaxValue);
 	// You have to look at the IL to see the value...
 	Console.WriteLine($"The values are {a} and {b}");
